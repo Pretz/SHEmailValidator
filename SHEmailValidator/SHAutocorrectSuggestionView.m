@@ -83,8 +83,8 @@ static const NSInteger kDismissButtonWidth = 30;
         CGSize titleSize = [title sizeWithFont:self.titleFont constrainedToSize:CGSizeMake(kMaxWidth - kDismissButtonWidth, MAXFLOAT) lineBreakMode:NSLineBreakByWordWrapping];
         CGSize suggestionSize = [suggestion sizeWithFont:self.suggestionFont constrainedToSize:CGSizeMake(kMaxWidth - kDismissButtonWidth, MAXFLOAT) lineBreakMode:NSLineBreakByCharWrapping];
        
-        CGFloat width = MAX(titleSize.width, suggestionSize.width) + kDismissButtonWidth + kCornerRadius * 2;
-        CGFloat height = titleSize.height + suggestionSize.height + kArrowHeight + kCornerRadius * 2;
+        CGFloat width = MAX(titleSize.width, suggestionSize.width) + kDismissButtonWidth + (kCornerRadius * 2) + self.strokeWidth;
+        CGFloat height = titleSize.height + suggestionSize.height + kArrowHeight + (kCornerRadius * 2) + self.strokeWidth;
         CGFloat left = MAX(10, target.center.x - width / 2);
         CGFloat top = target.frame.origin.y - height + 4;
 
@@ -101,6 +101,10 @@ static const NSInteger kDismissButtonWidth = 30;
         if (!self.fillColor) {
             self.fillColor = [SHAutocorrectSuggestionView defaultFillColor];
         }
+
+        if (!self.strokeColor) {
+            self.strokeColor = [UIColor clearColor];
+        }
         
         if (!self.titleColor) {
             self.titleColor = [SHAutocorrectSuggestionView defaultTitleColor];
@@ -115,17 +119,17 @@ static const NSInteger kDismissButtonWidth = 30;
 
 - (void)drawRect:(CGRect)rect
 {
-    CGSize contentSize = CGSizeMake(self.bounds.size.width, self.bounds.size.height - kArrowHeight);
-    CGPoint arrowBottom = CGPointMake(self.bounds.size.width / 2, self.bounds.size.height);
-    
+    CGSize contentSize = CGSizeMake(self.bounds.size.width - self.strokeWidth, self.bounds.size.height - kArrowHeight - self.strokeWidth);
+    CGPoint arrowBottom = CGPointMake(self.bounds.size.width / 2, self.bounds.size.height - self.strokeWidth);
+
 	CGMutablePathRef path = CGPathCreateMutable();
 	
     CGPathMoveToPoint(path, NULL, arrowBottom.x, arrowBottom.y);
     CGPathAddLineToPoint(path, NULL, arrowBottom.x - kArrowWidth, arrowBottom.y - kArrowHeight);
     
-    CGPathAddArcToPoint(path, NULL, 0, contentSize.height, 0, contentSize.height - kCornerRadius, kCornerRadius);
-    CGPathAddArcToPoint(path, NULL, 0, 0, kCornerRadius, 0, kCornerRadius);
-    CGPathAddArcToPoint(path, NULL, contentSize.width, 0, contentSize.width, kCornerRadius, kCornerRadius);
+    CGPathAddArcToPoint(path, NULL, self.strokeWidth, contentSize.height, self.strokeWidth, contentSize.height - kCornerRadius, kCornerRadius);
+    CGPathAddArcToPoint(path, NULL, self.strokeWidth, self.strokeWidth, kCornerRadius, self.strokeWidth, kCornerRadius);
+    CGPathAddArcToPoint(path, NULL, contentSize.width, self.strokeWidth, contentSize.width, kCornerRadius, kCornerRadius);
     CGPathAddArcToPoint(path, NULL, contentSize.width, contentSize.height, contentSize.width - kCornerRadius, contentSize.height, kCornerRadius);
     
     CGPathAddLineToPoint(path, NULL, arrowBottom.x + kArrowWidth, arrowBottom.y - kArrowHeight);
@@ -135,19 +139,18 @@ static const NSInteger kDismissButtonWidth = 30;
     CGContextRef context = UIGraphicsGetCurrentContext();
     
     CGContextSaveGState(context);
-    
-	CGContextAddPath(context, path);
+
+    CGContextAddPath(context, path);
 	CGContextClip(context);
     CGContextSetFillColorWithColor(context, self.fillColor.CGColor);
     CGContextFillRect(context, self.bounds);
     
     CGContextRestoreGState(context);
-	CGPathRelease(path);
-    
+
     CGFloat separatorX = contentSize.width - kDismissButtonWidth;
     CGContextSetStrokeColorWithColor(context, [UIColor grayColor].CGColor);
     CGContextSetLineWidth(context, 1);
-    CGContextMoveToPoint(context, separatorX, 0);
+    CGContextMoveToPoint(context, separatorX, self.strokeWidth);
     CGContextAddLineToPoint(context, separatorX, contentSize.height);
     CGContextStrokePath(context);
     
@@ -159,6 +162,14 @@ static const NSInteger kDismissButtonWidth = 30;
     CGContextMoveToPoint(context, separatorX + (kDismissButtonWidth - xSize) / 2, (contentSize.height + xSize) / 2);
     CGContextAddLineToPoint(context, separatorX + (kDismissButtonWidth + xSize) / 2, (contentSize.height - xSize) / 2);
     CGContextStrokePath(context);
+
+    CGContextAddPath(context, path);
+    CGContextSetLineWidth(context, self.strokeWidth);
+    CGContextSetStrokeColorWithColor(context, self.strokeColor.CGColor);
+    CGContextStrokePath(context);
+
+	CGPathRelease(path);
+
     
     [self.titleColor set];
     [self.title drawInRect:self.titleRect withFont:self.titleFont lineBreakMode:NSLineBreakByWordWrapping alignment:NSTextAlignmentCenter];

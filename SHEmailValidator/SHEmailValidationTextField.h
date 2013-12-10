@@ -25,6 +25,7 @@
 @property (nonatomic, strong) NSString *defaultErrorMessage;
 @property (nonatomic, strong) NSString *messageForSuggestion;
 @property (nonatomic, strong) UIColor *bubbleFillColor;
+@property (nonatomic, strong) UIColor *bubbleStrokeColor;
 @property (nonatomic, strong) UIColor *bubbleTitleColor;
 @property (nonatomic, strong) UIColor *bubbleSuggestionColor;
 

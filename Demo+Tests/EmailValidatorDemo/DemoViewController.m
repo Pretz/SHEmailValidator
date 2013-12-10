@@ -57,7 +57,8 @@
 //    self.emailTextField.bubbleFillColor = [UIColor whiteColor];
 //    self.emailTextField.bubbleTitleColor = [UIColor blackColor];
 //    self.emailTextField.bubbleSuggestionColor = [UIColor redColor];
-    
+//    self.emailTextField.bubbleStrokeColor = [UIColor blackColor];
+
     [self.view addSubview:self.emailTextField];
     
     self.passwordTextField = [[UITextField alloc] initWithFrame:CGRectMake(10, 150, self.view.bounds.size.width - 20, 44)];

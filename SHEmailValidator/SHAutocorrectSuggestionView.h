@@ -33,6 +33,8 @@ typedef void (^SetupBlock)(SHAutocorrectSuggestionView *view);
 @property (nonatomic, weak) id<AutocorrectSuggestionViewDelegate> delegate;
 @property (nonatomic, strong) NSString *suggestedText;
 @property (nonatomic, strong) UIColor *fillColor;
+@property (nonatomic, strong) UIColor *strokeColor;
+@property (nonatomic, assign) CGFloat strokeWidth;
 @property (nonatomic, strong) UIColor *titleColor;
 @property (nonatomic, strong) UIColor *suggestionColor;
 

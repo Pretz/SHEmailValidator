@@ -116,6 +116,8 @@
 @property (nonatomic, strong) EmailTextFieldDelegate *delegateProxy;
 @property (nonatomic, strong) NSMutableDictionary *messageDictionary;
 
+- (void)showSuggestionViewWithMessage:(NSString *)message suggestion:(NSString *)suggestion;
+
 @end
 
 @implementation SHEmailValidationTextField
@@ -184,23 +186,26 @@
             if (!message) {
                 message = self.defaultErrorMessage;
             }
-            self.suggestionView = [SHAutocorrectSuggestionView showFromView:self title:message autocorrectSuggestion:nil withSetupBlock:^(SHAutocorrectSuggestionView *view) {
-                view.fillColor = self.bubbleFillColor;
-                view.titleColor = self.bubbleTitleColor;
-                view.suggestionColor = self.bubbleSuggestionColor;
-            }];
-            self.suggestionView.delegate = self;
+            [self showSuggestionViewWithMessage:message suggestion:nil];
         } else {
             if (validationResult.autocorrectSuggestion) {
-                self.suggestionView = [SHAutocorrectSuggestionView showFromView:self title:self.messageForSuggestion autocorrectSuggestion:validationResult.autocorrectSuggestion withSetupBlock:^(SHAutocorrectSuggestionView *view) {
-                    view.fillColor = self.bubbleFillColor;
-                    view.titleColor = self.bubbleTitleColor;
-                    view.suggestionColor = self.bubbleSuggestionColor;
-                }];
-                self.suggestionView.delegate = self;
+                [self showSuggestionViewWithMessage:self.messageForSuggestion suggestion:validationResult.autocorrectSuggestion];
             }
         }
     }
+}
+
+- (void)showSuggestionViewWithMessage:(NSString *)message suggestion:(NSString *)suggestion {
+    self.suggestionView = [SHAutocorrectSuggestionView showFromView:self title:message autocorrectSuggestion:suggestion withSetupBlock:^(SHAutocorrectSuggestionView *view) {
+        view.fillColor = self.bubbleFillColor;
+        view.titleColor = self.bubbleTitleColor;
+        view.suggestionColor = self.bubbleSuggestionColor;
+        if (self.bubbleStrokeColor) {
+            view.strokeColor = self.bubbleStrokeColor;
+            view.strokeWidth = 1;
+        }
+    }];
+    self.suggestionView.delegate = self;
 }
 
 - (void)hostWillAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation
