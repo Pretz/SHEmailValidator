@@ -37,8 +37,8 @@ static const NSInteger kDismissButtonWidth = 30;
 @property (nonatomic, strong) UIFont *titleFont;
 @property (nonatomic, strong) UIFont *suggestionFont;
 @property (nonatomic, strong) NSString *title;
-@property (nonatomic) CGRect titleRect;
-@property (nonatomic) CGRect suggestionRect;
+@property (nonatomic, strong) NSMutableAttributedString *attributedTitle;
+@property (nonatomic, assign) CGRect textRect;
 
 @end
 
@@ -80,20 +80,6 @@ static const NSInteger kDismissButtonWidth = 30;
         self.titleFont = [UIFont boldSystemFontOfSize:13];
         self.suggestionFont = [UIFont boldSystemFontOfSize:13];
         
-        CGSize titleSize = [title sizeWithFont:self.titleFont constrainedToSize:CGSizeMake(kMaxWidth - kDismissButtonWidth, MAXFLOAT) lineBreakMode:NSLineBreakByWordWrapping];
-        CGSize suggestionSize = [suggestion sizeWithFont:self.suggestionFont constrainedToSize:CGSizeMake(kMaxWidth - kDismissButtonWidth, MAXFLOAT) lineBreakMode:NSLineBreakByCharWrapping];
-       
-        CGFloat width = MAX(titleSize.width, suggestionSize.width) + kDismissButtonWidth + (kCornerRadius * 2) + self.strokeWidth;
-        CGFloat height = titleSize.height + suggestionSize.height + kArrowHeight + (kCornerRadius * 2) + self.strokeWidth;
-        CGFloat left = MAX(10, target.center.x - width / 2);
-        CGFloat top = target.frame.origin.y - height + 4;
-
-        self.frame = CGRectIntegral(CGRectMake(left, top, width, height));
-        self.opaque = NO;
-        
-        self.titleRect = CGRectMake((width - kDismissButtonWidth - titleSize.width) / 2, kCornerRadius, titleSize.width, titleSize.height);
-        self.suggestionRect = CGRectMake(kCornerRadius, kCornerRadius + titleSize.height, suggestionSize.width, suggestionSize.height);
-        
         if (block) {
             block(self);
         }
@@ -113,6 +99,36 @@ static const NSInteger kDismissButtonWidth = 30;
         if (!self.suggestionColor) {
             self.suggestionColor = [SHAutocorrectSuggestionView defaultSuggestionColor];
         }
+
+        self.attributedTitle = [[NSMutableAttributedString alloc] initWithString:[self.title stringByAppendingString:@"\n"]
+                                                                      attributes:@{NSForegroundColorAttributeName: self.titleColor,
+                                                                                   NSFontAttributeName: self.titleFont}];
+        if (self.suggestedText) {
+            [self.attributedTitle appendAttributedString:[[NSAttributedString alloc] initWithString:self.suggestedText
+                                                                                         attributes:@{NSForegroundColorAttributeName: self.suggestionColor,
+                                                                                                      NSFontAttributeName: self.suggestionFont}]];
+            [self.attributedTitle appendAttributedString:[[NSAttributedString alloc] initWithString:@"?" attributes:@{NSForegroundColorAttributeName: self.titleColor,
+                                                                                                                      NSFontAttributeName: self.titleFont}]];
+        }
+
+        NSMutableParagraphStyle *paragraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+        paragraphStyle.alignment = NSTextAlignmentCenter;
+        paragraphStyle.lineBreakMode = NSLineBreakByCharWrapping;
+        [self.attributedTitle addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:NSMakeRange(0, self.attributedTitle.length)];
+
+        CGSize textSize = [self.attributedTitle boundingRectWithSize:CGSizeMake(kMaxWidth - kDismissButtonWidth, MAXFLOAT)
+                                                             options:NSStringDrawingUsesLineFragmentOrigin
+                                                             context:nil].size;
+
+        CGFloat width = textSize.width + kDismissButtonWidth + (kCornerRadius * 2) + self.strokeWidth;
+        CGFloat height = textSize.height + kArrowHeight + (kCornerRadius * 2) + self.strokeWidth;
+        CGFloat left = MAX(10, target.center.x - width / 2);
+        CGFloat top = target.frame.origin.y - height + 4;
+
+        self.frame = CGRectIntegral(CGRectMake(left, top, width, height));
+        self.opaque = NO;
+
+        self.textRect = CGRectMake((width - kDismissButtonWidth - textSize.width) / 2, kCornerRadius, textSize.width, textSize.height);
     }
     return self;
 }
@@ -170,12 +186,7 @@ static const NSInteger kDismissButtonWidth = 30;
 
 	CGPathRelease(path);
 
-    
-    [self.titleColor set];
-    [self.title drawInRect:self.titleRect withFont:self.titleFont lineBreakMode:NSLineBreakByWordWrapping alignment:NSTextAlignmentCenter];
-    
-    [self.suggestionColor set];
-    [self.suggestedText drawInRect:self.suggestionRect withFont:self.suggestionFont lineBreakMode:NSLineBreakByCharWrapping alignment:NSTextAlignmentLeft];
+    [self.attributedTitle drawInRect:self.textRect];
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
