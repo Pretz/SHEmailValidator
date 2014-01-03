@@ -100,21 +100,27 @@ static const NSInteger kDismissButtonWidth = 30;
             self.suggestionColor = [SHAutocorrectSuggestionView defaultSuggestionColor];
         }
 
-        self.attributedTitle = [[NSMutableAttributedString alloc] initWithString:[self.title stringByAppendingString:@"\n"]
+        NSMutableParagraphStyle *wordWrap = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+        wordWrap.alignment = NSTextAlignmentCenter;
+        wordWrap.lineBreakMode = NSLineBreakByWordWrapping;
+        self.attributedTitle = [[NSMutableAttributedString alloc] initWithString:self.title
                                                                       attributes:@{NSForegroundColorAttributeName: self.titleColor,
-                                                                                   NSFontAttributeName: self.titleFont}];
+                                                                                   NSFontAttributeName: self.titleFont,
+                                                                                   NSParagraphStyleAttributeName: wordWrap}];
         if (self.suggestedText) {
-            [self.attributedTitle appendAttributedString:[[NSAttributedString alloc] initWithString:self.suggestedText
+            NSMutableParagraphStyle *charWrap = ({
+                NSMutableParagraphStyle *style = [wordWrap copy];
+                style.lineBreakMode = NSLineBreakByCharWrapping;
+                style;
+            });
+            [self.attributedTitle appendAttributedString:[[NSAttributedString alloc] initWithString:[@"\n" stringByAppendingString:self.suggestedText]
                                                                                          attributes:@{NSForegroundColorAttributeName: self.suggestionColor,
-                                                                                                      NSFontAttributeName: self.suggestionFont}]];
+                                                                                                      NSFontAttributeName: self.suggestionFont,
+                                                                                                      NSParagraphStyleAttributeName: charWrap}]];
             [self.attributedTitle appendAttributedString:[[NSAttributedString alloc] initWithString:@"?" attributes:@{NSForegroundColorAttributeName: self.titleColor,
-                                                                                                                      NSFontAttributeName: self.titleFont}]];
+                                                                                                                      NSFontAttributeName: self.titleFont,
+                                                                                                                      NSParagraphStyleAttributeName: charWrap}]];
         }
-
-        NSMutableParagraphStyle *paragraphStyle = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
-        paragraphStyle.alignment = NSTextAlignmentCenter;
-        paragraphStyle.lineBreakMode = NSLineBreakByCharWrapping;
-        [self.attributedTitle addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:NSMakeRange(0, self.attributedTitle.length)];
 
         CGSize textSize = [self.attributedTitle boundingRectWithSize:CGSizeMake(kMaxWidth - kDismissButtonWidth, MAXFLOAT)
                                                              options:NSStringDrawingUsesLineFragmentOrigin
