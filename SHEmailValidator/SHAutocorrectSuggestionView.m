@@ -109,7 +109,7 @@ static const NSInteger kDismissButtonWidth = 30;
                                                                                    NSParagraphStyleAttributeName: wordWrap}];
         if (self.suggestedText) {
             NSMutableParagraphStyle *charWrap = ({
-                NSMutableParagraphStyle *style = [wordWrap copy];
+                NSMutableParagraphStyle *style = [wordWrap mutableCopy];
                 style.lineBreakMode = NSLineBreakByCharWrapping;
                 style;
             });
