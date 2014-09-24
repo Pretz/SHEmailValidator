@@ -34,7 +34,7 @@
 	NSUInteger otherLength = otherString.length;
 	
 	if (length != 0 && otherLength != 0) {
-		d = malloc(sizeof(NSUInteger) * (++length) * (++otherLength));
+		d = malloc(sizeof(*d) * (++length) * (++otherLength));
 		
 		for (int i = 0; i < length; i++) {
 			d[i] = i;
